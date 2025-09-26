@@ -1,13 +1,26 @@
+mod file;
+
 use fancy_regex::Regex;
+use file::File;
 
-fn main() {
-    let raw_text = "Hello, this is a test!".to_string();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let raw_text = File::read_content()?;
 
-    let re = Regex::new(r#""#)
+    let re = Regex::new(r#"([,.?_!"()']|--|\s)"#)
         .unwrap();
 
-    let preprocessed1: Vec<&str> = re.split(&raw_text[..]).map(|x| x.unwrap())
+    let mut preprocessed: Vec<&str> = re
+        .split(&raw_text[..])
+        .filter_map(|x|
+            x
+                .ok()
+                .filter(|s| !s.is_empty())
+        )
         .collect();
 
-    println!("{}", raw_text);
+    preprocessed.sort();
+
+    println!("{:?}", preprocessed);
+    
+    Ok(())
 }
