@@ -1,31 +1,36 @@
+use std::collections::{HashSet, HashMap};
 use fancy_regex::Regex;
 
 pub struct Tokenzier {
-    content: String
+    id_hm: HashMap<String, i32>
 }
 
 impl Tokenzier {
 
-    pub fn new(content: String) -> Self {
-        Self {
-            content
-        }
+    pub fn new() -> Self {
+        Tokenzier { id_hm: HashMap::new() }
     }
-    
-    pub fn extract_sorted_words(&self) -> Vec<&str> {
-        let re = Regex::new(r#"([,.?_!"()']|--|\s)"#)
-            .unwrap();
 
-        let mut preprocessed: Vec<&str> = re
-            .split(&self.content[..])
-            .filter_map(|x|
-                x
-                    .ok()
-                    .filter(|s| !s.is_empty())
-            )
+    pub fn encode(&mut self, set: HashSet<String>) -> &HashMap<String, i32> {
+        self.id_hm = set.iter()
+            .enumerate()
+            .map(|(i, token)| (token.to_string(), i as i32))
             .collect();
 
-        preprocessed.sort();
-        preprocessed
+        &self.id_hm
+    }   
+
+
+    // We should move this to the File struct
+    pub fn extract_words(raw_text: String) -> HashSet<String> {
+        let expr = r#"([,.?_!"()']|--|\s)"#;
+
+        let re = Regex::new(expr).unwrap();
+
+        re.split(&raw_text)
+            .filter_map(|res| res.ok())
+            .filter(|&r| !r.is_empty())
+            .map(|v| v.to_string())
+            .collect::<HashSet<String>>()
     }
 }
