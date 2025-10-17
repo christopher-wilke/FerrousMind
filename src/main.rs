@@ -4,8 +4,7 @@ mod helpers;
 mod tokenizer;
 
 use tokenizer::Tokenzier;
-use file::File;
-use helpers::create_hs_from_raw;
+use helpers::{create_hs_from_raw, split_words_from_raw};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     
@@ -13,17 +12,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let words = Tokenzier::extract_words(File::read_content()?);
 
     let simple_test_string = "The brown dog playfully chased the swift fox".to_string();
-    let words = crate::helpers::split_words_from_raw(&simple_test_string);
+    let words = split_words_from_raw(&simple_test_string);
     let hs_words = create_hs_from_raw(simple_test_string.clone());
 
     let tokenizer = Tokenzier::new(hs_words);
     
-    tokenizer.encode(words);
-    // let id_hm = tokenizer.encode(words);
+    let ids  = tokenizer.encode(words);
+    let words = tokenizer.decode(ids);
 
-    // for (idx, val) in id_hm {
-    //     println!("{}: {}", idx, val);
-    // }
+    println!("{:?}", words);
     
     Ok(())
 }

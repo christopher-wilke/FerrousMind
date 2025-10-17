@@ -1,36 +1,44 @@
-use std::collections::{HashSet, HashMap};
-use crate::helpers::create_hs_from_raw;
+use std::{any::Any, collections::{HashMap, HashSet}};
 
 pub struct Tokenzier {
-    id_hm: HashMap<String, i32>
+    str_to_id: HashMap<String, u32>,
+    id_to_str: HashMap<u32, String>
 }
 
 impl Tokenzier {
 
     pub fn new(set: HashSet<String>) -> Self {
-        let id_hm = set.iter()
-            .enumerate()
-            .map(|(i, token)| (token.to_string(), i as i32))
-            .collect();
 
-        Tokenzier { id_hm }
+        let mut str_to_id = HashMap::new();
+        let mut id_to_str = HashMap::new();
+
+        for (i, v) in set.into_iter().enumerate() {
+            str_to_id.insert(v.clone(), i as u32);
+            id_to_str.insert(i as u32, v);
+        }
+
+        Tokenzier { str_to_id, id_to_str }
     }
 
-    pub fn encode(&self, words: Vec<&str>) {
-        // let mut res  = vec![];
+    pub fn encode<'a, I>(&self, words: I) -> Vec<u32>
+    where I: IntoIterator<Item=&'a str>
+    {
+        words.into_iter()
+            .map(|word| *self.str_to_id.get(word)
+            .expect("Word not found in hashmap"))
+            .collect()
+    }
 
-        
-
-        // for w in words {
-
-        //     println!("{w}");
-        // }
-        
-        // self.id_hm = set.iter()
-        //     .enumerate()
-        //     .map(|(i, token)| (token.to_string(), i as i32))
-        //     .collect();
-
-        // &self.id_hm
-    }   
+    pub fn decode<I>(&self, ids: I) -> String
+    where I: IntoIterator<Item = u32>
+    {
+        ids.into_iter()
+            .filter_map(|id| {
+                self.id_to_str
+                    .get(&id)
+                    .map(|x| x.as_str())
+            })
+            .collect::<Vec<&str>>()
+            .join(" ")
+    }
 }
